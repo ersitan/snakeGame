@@ -1,4 +1,4 @@
-from parts import Snake, screen, Food
+from parts import Snake, screen
 
 
 snake = Snake()

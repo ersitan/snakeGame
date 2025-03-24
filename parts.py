@@ -10,20 +10,20 @@ screen.tracer(0)
 screen.listen()
 
 
-class Food:
+class Food(Turtle):
     def __init__(self):
-        self.food = Turtle("circle")
-        self.food.color("blue")
-        self.food.teleport(
-            x=random.randrange(int(-screen.window_width() / 2) + 20, int(screen.window_width() / 2) - 20, 20),
+        super().__init__()
+        self.shape("circle")
+        self.color("blue")
+        self.teleport(x=random.randrange(int(-screen.window_width() / 2) + 20, int(screen.window_width() / 2) - 20, 20),
             y=random.randrange(int(-screen.window_height() / 2) + 20, int(screen.window_height() / 2) - 20, 20))
 
     def get_food_position(self):
-        return round(self.food.xcor()), round(self.food.ycor())
+        return round(self.xcor()), round(self.ycor())
 
     def delete_old_food(self):
-        self.food.hideturtle()
-        self.food.clear()
+        self.hideturtle()
+        self.clear()
 
 
 class Snake:
@@ -31,21 +31,29 @@ class Snake:
         self.parts = []
         self.length = 3
         self.init_snake()
-        self.head = self.parts[0].get_part()
+        self.head = self.parts[0]
         self.should_move = True
         self.food = Food()
         self.score = Parts(x_pos=300, y_pos=280)
-        self.score.get_part().hideturtle()
+        self.score.hideturtle()
         self.update_score()
 
+    def init_snake(self):
+        x, y = 0, 0
+        for _ in range(self.length):
+            part = Parts(x, y)
+            part.color("green")
+            self.parts.append(part)
+            x -= 20
+
     def update_score(self):
-        self.score.get_part().clear()
-        self.score.get_part().write(f"Score: {self.length - 3}")
+        self.score.clear()
+        self.score.write(f"Score: {self.length - 3}")
 
     def create_food(self):
         self.food.delete_old_food()
         self.food = Food()
-        if self.food.get_food_position() in [(x.get_part().xcor(), x.get_part().ycor()) for x in self.parts]:
+        if self.food.get_food_position() in [(x.xcor(), x.ycor()) for x in self.parts]:
             self.create_food()
 
     def is_food_eaten(self):
@@ -54,24 +62,16 @@ class Snake:
         if food_pos == (round(x_pos), round(y_pos)):
             self.create_food()
             self.length += 1
-            snake_segment = Parts(self.parts[-1].get_part().xcor(), self.parts[-1].get_part().ycor())
+            snake_segment = Parts(self.parts[-1].xcor(), self.parts[-1].ycor())
             color = "lime" if self.length % 3 else "green"
-            snake_segment.get_part().color(color)
+            snake_segment.color(color)
             self.parts.append(snake_segment)
             self.update_score()
 
-    def init_snake(self):
-        x, y = 0, 0
-        for _ in range(self.length):
-            part = Parts(x, y)
-            part.get_part().color("green")
-            self.parts.append(part)
-            x -= 20
-
     def move_snake(self):
         for i in range(len(self.parts) - 1):
-            self.parts[len(self.parts) - 1 - i].get_part().goto(self.parts[len(self.parts) - i - 2].get_part().xcor(),
-                                                                self.parts[len(self.parts) - i - 2].get_part().ycor())
+            self.parts[len(self.parts) - 1 - i].goto(self.parts[len(self.parts) - i - 2].xcor(),
+                                                                self.parts[len(self.parts) - i - 2].ycor())
 
         self.head.forward(20)
 
@@ -84,13 +84,13 @@ class Snake:
         self.head.setheading(self.head.heading() - 90)
 
     def is_crashed(self):
-        hit_self = len([x for x in self.parts[1:] if (round(x.get_part().xcor()), round(x.get_part().ycor())) == (
+        hit_self = len([x for x in self.parts[1:] if (round(x.xcor()), round(x.ycor())) == (
             round(self.head.xcor()), round(self.head.ycor()))]) > 0
 
         hit_walls = self.head.xcor() < - screen.window_width() / 2 + 20 or self.parts[
-            0].get_part().xcor() > screen.window_width() / 2 - 20 or self.parts[
-                        0].get_part().ycor() < - screen.window_height() / 2 + 20 or self.parts[
-                        0].get_part().ycor() > screen.window_height() / 2 - 20
+            0].xcor() > screen.window_width() / 2 - 20 or self.parts[
+                        0].ycor() < - screen.window_height() / 2 + 20 or self.parts[
+                        0].ycor() > screen.window_height() / 2 - 20
         return hit_self
 
     def check_walls(self):
@@ -104,14 +104,12 @@ class Snake:
             self.head.sety(screen.window_height() / 2)
 
 
-class Parts:
+class Parts(Turtle):
     def __init__(self, x_pos=0, y_pos=0):
-        self.part = Turtle("square")
-        self.part.color("white")
-        self.part.speed("slowest")
-        self.part.penup()
-        self.part.setx(x_pos)
-        self.part.sety(y_pos)
-
-    def get_part(self):
-        return self.part
+        super().__init__()
+        self.shape("square")
+        self.color("white")
+        self.speed("slowest")
+        self.penup()
+        self.setx(x_pos)
+        self.sety(y_pos)
